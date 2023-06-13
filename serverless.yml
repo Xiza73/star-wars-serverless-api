@@ -1,0 +1,75 @@
+service: star-wars-api
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-west-2
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:*
+          Resource: "arn:aws:dynamodb:us-west-2:917135048764:table/CharacterTable"
+
+package:
+  include:
+    - node_modules/**
+    - package.json
+    - package-lock.json
+
+functions:
+  getSavedCharacters:
+    handler: dist/lambdas/getSavedCharacters.handler
+    events:
+      - http:
+          path: /character
+          method: get
+          cors: true
+
+  getCharacter:
+    handler: dist/lambdas/getCharacter.handler
+    events:
+      - http:
+          path: /character/global/{id}
+          method: get
+          cors: true
+
+  getSavedCharacter:
+    handler: dist/lambdas/getSavedCharacter.handler
+    events:
+      - http:
+          path: /character/{id}
+          method: get
+          cors: true
+
+  createCharacter:
+    handler: dist/lambdas/createCharacter.handler
+    events:
+      - http:
+          path: /character
+          method: post
+          cors: true
+
+  saveCharacter:
+    handler: dist/lambdas/saveCharacter.handler
+    events:
+      - http:
+          path: /character/save
+          method: post
+          cors: true
+
+resources:
+  Resources:
+    CharacterTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CharacterTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
